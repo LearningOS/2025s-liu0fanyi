@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -29,13 +28,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T:PartialEq + std::cmp::PartialOrd + Clone> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T:PartialEq + std::cmp::PartialOrd + Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -71,11 +70,39 @@ impl<T> LinkedList<T> {
     }
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
-		//TODO
+        let mut item_a = list_a.start;
+        let mut item_b = list_b.start;
+
+        let mut list = LinkedList::new();
+
+        unsafe {
+            while item_a.is_some() || item_b.is_some() {
+                let Some(item_a_inner) = item_a else {
+                    list.add((*item_b.unwrap().as_ptr()).val.clone());
+                    item_b = (*item_b.unwrap().as_ptr()).next;
+                    continue;
+                };
+                let Some(item_b_inner) = item_b else {
+                    list.add((*item_a.unwrap().as_ptr()).val.clone());
+                    item_a = (*item_a.unwrap().as_ptr()).next;
+                    continue;
+                };
+                let val_a = ((*item_a_inner.as_ptr())).val.clone();
+                let val_b = ((*item_b_inner.as_ptr())).val.clone();
+                list.add(if val_a < val_b { 
+                    item_a = (*item_a_inner.as_ptr()).next;
+                    val_a
+                } else {
+                    item_b = (*item_b_inner.as_ptr()).next;
+                    val_b
+                });
+            }
+        }
+
 		Self {
-            length: 0,
-            start: None,
-            end: None,
+            length: list.length,
+            start: list.start,
+            end: list.end,
         }
 	}
 }

@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -37,7 +36,18 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        // 4,2,9,11
+        self.items.push(value);
+        self.count += 1;
+        let mut index = self.count;
+        while index > 1 {
+            let parent = self.parent_idx(index);
+            if (self.comparator)(&self.items[parent], &self.items[index]) {
+                break;
+            }
+            self.items.swap(index, parent);
+            index = parent;
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +67,13 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+        let mut smallest = left;
+        if right < self.len() && (self.comparator)(&self.items[right],&self.items[smallest]) {
+            smallest = right;
+        }
+        smallest
     }
 }
 
@@ -79,13 +94,36 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Clone + std::fmt::Debug,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+        // println!("items:{:?}", self.items);
+        let top = self.items[1].clone();
+        let last = self.items.pop();
+        self.count -= 1;
+        // println!("top:{:?}, last:{:?}", top, last);
+        if !self.is_empty(){
+            self.items[1] = last.unwrap(); 
+            let mut index = 1;
+            let mut smallest = index;
+            
+            while self.children_present(index) {
+                let smallest = self.smallest_child_idx(index);
+                // println!("who big:{:?}, {:?}", self.items[index], self.items[smallest]);
+                if (self.comparator)(&self.items[index],&self.items[smallest]) {
+                    break;
+                }
+                self.items.swap(index, smallest);
+                index = smallest;
+                // println!("current index {:?}", index);
+            }
+        }
+        Some(top)
     }
 }
 
